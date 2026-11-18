@@ -9,6 +9,8 @@ Escopo: https://github.com/digitalcollegebr/projeto-backend
 
 Node.js, Express, MySQL, Sequelize (ORM + migrations), bcryptjs, jsonwebtoken, dotenv, swagger-ui-express, Jest e Supertest, Nodemon.
 
+Usei `bcryptjs` (bcrypt em JavaScript puro) em vez de `bcrypt` por compatibilidade com o Node 24, sem necessidade de compilação.
+
 ## Como rodar
 
 Pré-requisitos: **Node 18+** e **MySQL 8** rodando.
@@ -85,7 +87,7 @@ Rotas protegidas exigem `Authorization: Bearer <token>`. O token é obtido em `P
 `limit`, `page`, `fields`, `match` (nome ou descrição), `category_ids=15,24`, `price-range=100-200` e `option[45]=GG,PP`.
 `limit=-1` retorna todos os itens.
 
-## Decisões tomadas onde o escopo era ambíguo
+## Decisões de Projeto
 
 - **Token ausente ou inválido retorna 401** (o escopo cita 400 na Seção 05 e 401 nos demais endpoints; usamos 401 em todos).
 - **`POST /v1/user` (cadastro) e `POST /v1/user/token` (login) são públicos**, senão não seria possível obter o primeiro token. Os demais POST, PUT e DELETE exigem token.
