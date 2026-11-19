@@ -67,7 +67,7 @@ async function getById(rawId, baseUrl) {
 }
 
 // GET /v1/product/search
-async function search(query, baseUrl) {
+async function search(query, baseUrl, optionFilters = {}) {
   const { limit, page, offset, responseLimit } = parsePagination(query);
   const fields = parseFields(query.fields, ALL_FIELDS);
 
@@ -95,18 +95,14 @@ async function search(query, baseUrl) {
   }
 
   // option[45]=GG,PP: produtos cuja opção 45 contenha algum dos valores
-  if (query.option !== undefined) {
-    if (typeof query.option !== 'object' || Array.isArray(query.option)) {
-      throw new AppError(400, 'option deve seguir o formato option[id]=valor1,valor2');
-    }
-    for (const [optionId, raw] of Object.entries(query.option)) {
-      const id = Number(optionId);
-      const wanted = String(raw).split(',').map((v) => v.trim()).filter(Boolean);
-      if (!Number.isInteger(id) || id < 1 || !wanted.length) throw new AppError(400, 'option inválido');
-      const rows = await ProductOption.findAll({ where: { id }, raw: true });
-      const matches = rows.filter((r) => r.values.split(',').some((v) => wanted.includes(v.trim())));
-      idSets.push(matches.map((r) => r.product_id));
-    }
+  // (optionFilters vem do controller, já lido direto da URL: o parser do Express transforma option[2] em lista)
+  for (const [optionId, raw] of Object.entries(optionFilters)) {
+    const id = Number(optionId);
+    const wanted = String(raw).split(',').map((v) => v.trim()).filter(Boolean);
+    if (!Number.isInteger(id) || id < 1 || !wanted.length) throw new AppError(400, 'option inválido');
+    const rows = await ProductOption.findAll({ where: { id }, raw: true });
+    const matches = rows.filter((r) => r.values.split(',').some((v) => wanted.includes(v.trim())));
+    idSets.push(matches.map((r) => r.product_id));
   }
 
   if (idSets.length) where.id = { [Op.in]: intersect(idSets) };
